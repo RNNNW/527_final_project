@@ -1,0 +1,384 @@
+---
+title: "ESE527_Hw02"
+author: "Jiayi Zhou"
+date: "2/21/2022"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+
+#Deep-Dive on Outlier detection Methods
+
+The purpose of this homework is to review several outlier detection methods made avialable through R packages. After completition of this homework you should be familiarized with standard methods for univariate and multivariate outlier detection methods. Application of these techniques to you project, as it applies, will be requested and will be considered as part of your mid-term report.  
+
+For more details on how to work with RmarkDown please read the following link:
+https://www.stat.cmu.edu/~cshalizi/rmarkdown/
+
+Please install the following packages prior to execute the R Markdown:
+install.packages(c("OutlierDetection","OutliersO3","outliers"))
+
+```{r}
+library(OutlierDetection)
+library(OutliersO3)
+library(outliers)
+```
+
+
+## Data Description:
+
+We will proceed now to summarize the classical Toy Example iris:
+
+The Fisher's or Anderson's iris data set gives the measurements in centimeters of the variables sepal length and width and petal length and width, respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica. For more information about the data set, execute 
+
+```{r iris}
+help(iris)
+summary(iris)
+head(iris)
+```
+
+
+## Problem 1: Expanding knowledge based on Outlier detection techniques
+The objective of this problem is to expose the student to different outlier detection techniques made available through R packages. The goal is to ensure that the main assumptions of these techniques are learned and the students is capable of articulating how the technique works statistically and in practice by using a toy example.
+
+As discussed in our lecture, outlier detection techniques can be classified as follows:
+
+1.-Statistical Tests based Approaches
+2. Depth-based Approaches
+3. Deviation-based Approaches
+4. Distance-based Approaches
+5. Density-based Approaches
+
+Your task is to complete this Rmarkdown with a technical summary describing each of the technique entitled below and use the toy example to describe its application.
+
+
+### 1.-Statistical Tests based Approaches:
+
+#### a) Dixon test (small sample size)
+
+Technical Summary:
+
+The Dixon test is a series of tests that can help identify which of the samples have the lowest or greatest values. It was developed to test the statistical correctness of data.The test is usually performed sparingly and only once in a data set. It can be applied to bad data by arranging the data in order to generate Q which is Q = gap/range. If the gap between the closest number and the outlier is greater than the Qtable, then reject the point.
+
+References:
+- Dixon, W.J. (1950). Analysis of extreme values. Ann. Math. Stat. 21, 4, 488-506.
+- Dixon, W.J. (1951). Ratios involving extreme values. Ann. Math. Stat. 22, 1, 68-78.
+- Rorabacher, D.B. (1991). Statistical Treatment for Rejection of Deviant Values: Critical Values of Dixon Q Parameter and Related Subrange Ratios at the 95 percent Confidence Level. Anal. Chem.
+83, 2, 139-146.
+
+Application:
+
+```{r}
+X=iris[1:30,1]
+dixon.test(X,type=0,opposite=TRUE)
+```
+
+#### b) Normalscore (Deviation with respect to the mean)
+
+Technical Summary:
+
+In statistics, the term "normal score" has two different meanings. One of them is the creation of a single value that can be treated as if it came from a standard normal distribution (zero mean, unit variance)."z" computes normal scores (differences between each value and the mean divided by standard deviation). F When value is set to 1, the p-value is returned. Otherwise, a logical vector is created that indicates which values exceed the specified probability. According to Shiffler, this value can also be set to zero in "z" type and then scores are confirmed to (n-1)/sqrt(n) values
+
+References:
+Schiffler, R.E (1998). Maximum Z scores and outliers. Am. Stat. 42, 1, 79-80.
+
+Application:
+
+```{r}
+X=iris[,1:4]
+
+scores(X,type="z",prob=0.95)[1:10,]
+
+```
+
+
+#### c) Median Absolute Deviation (Deviation with respect to the median)
+
+Technical Summary:
+
+In statistics, the term "normal score" has two different meanings. One of them is the creation of a single value that can be treated as if it came from a standard normal distribution (zero mean, unit variance)."mad" calculates the difference between each value and the median, divided by the absolute deviation from the median.If this option is enabled, instead of scores, the corresponding p-values are displayed. When value is set to 1, the p-value is returned. Otherwise, a logical vector is created that indicates which values exceed the specified probability. According to Shiffler, this value can also be set to zero in "mad" types, and then scores are confirmed to (n-1)/sqrt(n) values.
+
+References:
+Schiffler, R.E (1998). Maximum Z scores and outliers. Am. Stat. 42, 1, 79-80.
+
+```{r}
+X=iris[,1:4]
+
+scores(X,type="mad",prob=0.95)[1:10,]
+
+```
+
+
+#### d) Interquantile range score
+
+Technical Summary:
+
+In statistics, the term "normal score" has two different meanings. One of them is the creation of a single value that can be treated as if it came from a standard normal distribution (zero mean, unit variance).For the "iqr" type, all values lower than first and greater than third quartile is considered, and difference between them and nearest quartile divided by IQR are calculated. For the values between these quartiles, scores are always equal to zero. "mad" gives differences between each value and median, divided by median absolute deviation.If set, the corresponding p-values instead of scores are given,This value can be set for "iqr" type of scores, to form logical vector, which values has this limit exceeded.
+
+References:
+Schiffler, R.E (1998). Maximum Z scores and outliers. Am. Stat. 42, 1, 79-80.
+
+Note: check for the value of limit to be used. Below I inserted an arbitrary value
+```{r}
+X=iris[,1:4]
+scores(X,type="iqr",lim=1)[1:10,]
+```
+
+
+### 2. Depth-based Approach:
+
+Technical Summary:
+
+It is presented a new approach for detecting outliers in very large data sets with a limited execution time. This algorithm depicts the tuples as N-dimensional particles capable of forming a potential well around themselves. Later, the potential generated by all of the particles is used to distinguish outliers from the objects that comprise clusters.
+
+Reference:
+Johnson, T., Kwok, I., and Ng, R.T. 1998. Fast computation of 2-dimensional depth contours. In Proc. Int. Conf. on Knowledge Discovery and Data Mining (KDD), New York, NY. Kno
+
+Application:
+
+```{r}
+X=iris[,1:4]
+depthout(X,cutoff=0.05)
+```
+
+### 3. Deviation-based Approaches
+Technical Summary:
+
+To identify exceptional objects, deviation-based outlier detection does not use statistical tests or distance-based measures. Instead, it looks for outliers by analyzing the main characteristics of objects in a group.
+
+References:
+A. Arning, R. Agrawal, and P. Raghavan. A linear method for deviation detection in large
+databases. In Proc. 2nd International Conference on Knowledge Discovery and Data Mining,
+1996
+Chaudhary, A., Szalay, A. S., and Moore, A. W. 2002. Very fast outlier detection in large multidimensional data sets. In Proceedings of the ACM SIGMOD Workshop in Research Issues in Data Mining and Knowledge Discovery (DMKD). ACM Press
+
+
+### 4. Distance-based Approaches
+#### a) Outlier detection using Mahalanobis Distance
+Technical Summary:
+
+The Mahalanobis distance is a distance in factor space (Wood, 1983;Stevens, 1984). It is the most commonly used method for detecting multivariate outliers. The Mahalanobis d-squared is defined by Comrey (1985) as a "multivariate generalization of using the standard score and the normal curve to determine the probability that a score of a specified size or larger will be obtained" (p. 275). Rasmussen (1988) considered the Mahalanobis distance to be a multivariate extension of Z. The Mahalanobis distance is a measure of leverage, according to Rousseeuw and Leroy (1987).
+
+References:
+Barnett, V. 1978. The study of outliers: purpose and model. Applied Statistics, 27(3), 242–250.
+
+Application:
+```{r}
+X=iris[,1:4]
+maha(X,cutoff=0.9)
+```
+
+#### b) Outlier detection using k Nearest Neighbours Distance method
+Technical Summary:
+
+nn computes the average knn distance between observations and labels them as outliers based on the bootstrapped cutoff. The outlierliness of the observation labeled 'Outlier' is also reported, and it is the bootstrap estimate of the probability that the observation is an outlier. It also displays a scatterplot of the data with labelled outliers for bivariate data.
+
+References:
+Hautamaki, V., Karkkainen, I., and Franti, P. 2004. Outlier detection using k-nearest neighbour graph. In Proc. IEEE Int. Conf. on Pattern Recognition (ICPR), Cambridge, UK.
+
+Application:
+
+```{r}
+X=iris[,1:4]
+nn(X,k=4)
+```
+
+#### c) Outlier detection using kth Nearest Neighbour Distance method
+Technical Summary:
+
+nnk computes an observation's kth nearest neighbor distance and labels it as an outlier based on the bootstrapped cutoff. The outlierliness of the observation labeled 'Outlier' is also reported, and it is the bootstrap estimate of the probability that the observation is an outlier. It also displays a scatterplot of the data with labelled outliers for bivariate data.
+
+References:
+Hautamaki, V., Karkkainen, I., and Franti, P. 2004. Outlier detection using k-nearest neighbour graph. In Proc. IEEE Int. Conf. on Pattern Recognition (ICPR), Cambridge, UK.
+
+Application:
+
+```{r}
+X=iris[,1:4]
+nnk(X,k=4)
+```
+
+
+### 5. Density-based Approaches
+#### a) Outlier detection using Robust Kernal-based Outlier Factor(RKOF) algorithm
+Technical Summary:
+
+RKOF computes a kernel density estimation by comparing the density of neighboring observations to the density estimation. Given a bandwidth and k-distance, a gaussian kernel is used to estimate density. The parameters C and alpha can affect K-distance. The kNN() function from the 'dbscan' package is used to compute kNN using a kd-tree. The RKOF function can be used to detect outliers in clustering and other multidimensional domains.
+
+Reference:
+Ester, M., Kriegel, H.-P., Sander, J., and Xu, X. 1996. A density-based algorithm for discovering clusters in large spatial databases with noise. In Proc. Int. Conf. on Knowledge Discovery and Data Mining (KDD), Portland, OR.
+
+Application:
+```{r}
+X=iris[,1:4]
+dens(X,k=4,C=1)
+```
+#### b) Outlier detection using genralised dispersion
+Technical Summary:
+
+disp computes the LOO dispersion matrix for each observation (the dispersion matrix without taking into account the current observation) and labels an observation as outlier based on the bootstrapped cutoff for score (the difference between the determinant of the LOO dispersion matrix and the det of the actual dispersion matrix).The outlierliness of the observation labeled 'Outlier' is also reported, and it is the bootstrap estimate of the probability that the observation is an outlier. It also displays a scatterplot of the data with labelled outliers for bivariate data.
+
+Reference:
+Jin, W., Tung, A., and Han, J. 2001. Mining top-n local outliers in large databases. In Proc. ACM SIGKDD Int. Conf. on Knowledge Discovery and Data Mining (SIGKDD), San Francisco, CA.
+
+Application:
+```{r}
+X=iris[,1:4]
+disp(X,cutoff=0.99)
+```
+
+### 6. Join assessment of outlier detection methods using techniques described under 2 to 5.
+
+Technical Summary: Given the abudance of method to define outliers a most recent strategy is to develop consensus outlier detection method. For example, rules such as majority vote can be applied when the techniques considered are essentially different. Per instance, see "Outlier detection" package function OutlierDetection which finds outlier observations for the data using different methods and labels an observation as outlier based on the intersection of all the methods considered. Using the function edit in R investigate the criterion being used and which techniques were considered. Also, proposed a modification to the function so to consider any technique to include any given number of techniques for outlier detection. Per instance, ensure that you can include the techniques covered under category 1.
+
+Application:
+```{r}
+X=iris[,1:4]
+OutlierDetection(X)
+#Unveil the criterion used in OutlierDection function to define outliers using different methods
+#edit(OutlierDetection) # uncomment and execute this line
+```
+
+
+
+
+
+```{r}
+library(OutlierDetection)
+library(OutliersO3)
+library(outliers)
+library(tidyverse)
+```
+
+## Problem 2: 
+Apply the technique discussed above to the data set that you are using as part of the your problem. Please make sure to report the following:
+
+a) summary of you data sets
+Consider using summary function and use graphics to display your data
+```{r}
+data <- read.csv("train.csv",header = T)
+summary(data)
+```
+
+```{r}
+head(data)
+```
+
+
+```{r}
+glimpse(data)
+```
+
+```{r}
+ data$id[is.na(data$id)] <- mean(data$id, na.rm = TRUE)
+ data$runtime[is.na(data$runtime)] <- mean(data$runtime, na.rm = TRUE)
+ data$budget[is.na(data$budget)] <- mean(data$budget, na.rm = TRUE)
+ data$revenue[is.na(data$revenue)] <- mean(data$revenue, na.rm = TRUE)
+```
+
+```{r}
+data_num <- data.frame(data$id,data$budget,data$runtime,data$revenue)
+data_num
+```
+```{r}
+summary(data_num)
+```
+
+```{r}
+boxplot(data_num)
+```
+
+
+
+### 1.-Statistical Tests based Approaches:
+
+#### a) Dixon test (small sample size)
+
+```{r}
+X = data_num[1:30,4]
+dixon.test(X,type=0,opposite=TRUE)
+```
+
+#### b) Normalscore (Deviation with respect to the mean)
+```{r}
+X=data_num[,2:4]
+scores(X,type="z",prob=0.95)[1:3000,]
+```
+
+#### c) Median Absolute Deviation (Deviation with respect to the median)
+```{r}
+X=data_num[,2:4]
+scores(X,type="mad",prob=0.95)[1:3000,]
+```
+
+#### d) Interquantile range score
+
+```{r}
+X=data_num[,2:4]
+scores(X,type="iqr",lim=1)[1:3000,]
+```
+
+
+### 2. Depth-based Approach:
+
+```{r}
+X=data_num[,2:4]
+depthout(X,cutoff=0.05)
+```
+
+
+### 3. Deviation-based Approaches
+
+### 4. Distance-based Approaches
+#### a) Outlier detection using Mahalanobis Distance
+
+```{r}
+X=data_num[,2:4]
+maha(X,cutoff=0.9)
+```
+
+#### b) Outlier detection using k Nearest Neighbours Distance method
+
+
+```{r}
+X=data_num[,2:4]
+nn(X,k=5)
+```
+
+#### c) Outlier detection using kth Nearest Neighbour Distance method
+
+
+```{r}
+X=data_num[,2:4]
+nnk(X,k=5)
+```
+
+
+### 5. Density-based Approaches
+#### a) Outlier detection using Robust Kernal-based Outlier Factor(RKOF) algorithm
+
+```{r}
+X=data_num[,1:4]
+dens(X,k=5,C=1)
+```
+#### b) Outlier detection using genralised dispersion
+
+```{r}
+X=data_num[,2:4]
+disp(X,cutoff=0.99)
+```
+
+### 6. Join assessment of outlier detection methods using techniques described under 2 to 5.
+
+```{r}
+X=data_num[,2:4]
+OutlierDetection(X)
+#edit(OutlierDetection)
+```
+
+Conclusions:
+
+Dixon test only works for small sample size,it is not fit our data set. From the boxplot, we can obviously see there are few outliner in budget and revenue..According to the other methods, we conclude that budget has the outlier which located on 15 31 35 47 61 115 121 122 189 249 252 295 308 315 323 357 365 500 519 538 541 667 675 685 730 735 764 777 778 790 825 838 858 882 903 907 928 942 978 1021 1039 1046 1064 1094 1127 1152 1153 1185 1196 1203 1212 1223 1230 1244 1250 1252 1256 1303 1321 1333 1335 1384 1393 1395 1512 1522 1542 1551 1674 1680 1709 1716 1718 1722 1724 1810 1812 1819 1825 1839 2053 2098  2210 2223 2240 2279 2305 2323 2327 2476 2486 2499 2533 2548 2571 2578 2618 2619 2624 2632 2730 2738 2739 2740 2748 2771 2786 2793 2803 2808 2859 2861 2866 2867 2939 2966 2971. And the outlier of revenue is located on 15 35 47 61 115  121 122 189 204 212 239 247 295 315 323 358 467 472 500 519 538 544 588 667 685 725 730 735 764 778 838 858 882 889 903 907 928 942 978 1064 1094 1127 1152 1212 1223 1230 1244 1250 1256 1271 1303 1333 1393 1395 1426 1461 1542 1551 1573 1599 1631 1641 1674 1709 1716 1762 1784 1810 1812 1819 1825 1839 1841 1857 1862 1869 1875 1881 1911 1915 1923 1934 1976 1988 2015 2098 2121 2126 2127 2135 2136 2151 2210 2279 2323 2327 2350 2354 2358 2371 2388 2444 2456 2465 2473 2487 2499 2571 2578 2618 2624 2632 2646 2648 2738 2740 2771 2786 2793 2803 2861 2866 2881. We find that the line which has outlier in budget also has the outlier in revenue. This may related with our topic. Higher budget will have higher revenue. We will explore it in the future work.
+
+
